@@ -1,0 +1,73 @@
+# MediCitas · Etapa 1
+# cp .env.example .env && docker compose up --build
+# Los servicios se hablan por nombre (db, redis, keycloak), nunca por IP.
+name: medicitas
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      TZ: UTC
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PUERTO_HOST:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  keycloak:
+    image: keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_PORT: "8080"
+      # El emisor (iss) de los tokens queda fijo aunque se pidan desde dentro de la red.
+      KC_HOSTNAME: ${KEYCLOAK_URL_PUBLICA}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+    volumes:
+      - ./keycloak/medicitas-realm.json:/opt/keycloak/data/import/medicitas-realm.json:ro
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # La imagen no trae curl; se consulta /health/ready por el puerto de administración.
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  api:
+    build: ./api
+    env_file: .env
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      keycloak: {condition: service_healthy}
+    environment:
+      # Las pruebas de integración corren dentro de este contenedor.
+      API_URL: http://localhost:8000
+    volumes:
+      - ./scripts:/app/scripts:ro
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:
