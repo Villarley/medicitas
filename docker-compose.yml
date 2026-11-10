@@ -1,6 +1,6 @@
 # MediCitas · Etapa 1
 # cp .env.example .env && docker compose up --build
-# Los servicios se hablan por nombre (db, redis, keycloak), nunca por IP.
+# Los servicios se hablan por nombre (db, redis, keycloak).
 name: medicitas
 
 services:
