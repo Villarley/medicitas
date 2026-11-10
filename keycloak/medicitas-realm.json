@@ -1,0 +1,533 @@
+{
+  "realm": "medicitas",
+  "enabled": true,
+  "displayName": "MediCitas",
+  "sslRequired": "none",
+  "accessTokenLifespan": 900,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin_plataforma",
+        "description": "Administrador de plataforma"
+      },
+      {
+        "name": "admin_clinica",
+        "description": "Administrador de clínica"
+      },
+      {
+        "name": "recepcion",
+        "description": "Recepción"
+      },
+      {
+        "name": "profesional",
+        "description": "Profesional de salud"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "medicitas-api",
+      "name": "API de MediCitas",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "medicitas-api-secret-dev",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "medicitas-cli",
+      "name": "Cliente de línea de comandos y pruebas",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "fullScopeAllowed": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "audiencia-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "medicitas-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "roles-de-realm",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "realm_access.roles",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "false"
+          }
+        },
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "config": {
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "usuario",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "5fe615c8-4d8e-565a-b0d9-7d52f7a0cb36",
+      "username": "plataforma",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ana",
+      "lastName": "Plataforma",
+      "email": "plataforma@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin_plataforma"
+      ]
+    },
+    {
+      "id": "db09029c-7a0f-5baf-9b42-d5f0d995ed5c",
+      "username": "admin.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Carlos",
+      "lastName": "Salas Méndez",
+      "email": "admin.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin_clinica"
+      ]
+    },
+    {
+      "id": "68d0a75b-a1b5-5e63-8bc7-acfe3d8f4dcf",
+      "username": "recepcion.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Paula",
+      "lastName": "Mora Chaves",
+      "email": "recepcion.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "recepcion"
+      ]
+    },
+    {
+      "id": "5cc54df0-2e93-5be6-a7ba-d4ff7eb3f637",
+      "username": "recepcion2.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Felipe",
+      "lastName": "Ulate Castro",
+      "email": "recepcion2.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "recepcion"
+      ]
+    },
+    {
+      "id": "2fc87002-3505-5178-99c7-56799008f178",
+      "username": "prof1.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sofía",
+      "lastName": "Ulate Soto",
+      "email": "prof1.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "f01ab15e-7ee3-569e-84ce-a10a0bdc61cd",
+      "username": "prof2.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sofía",
+      "lastName": "Ramírez Chaves",
+      "email": "prof2.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "0c062f67-9eac-5267-ad95-bfcdeaf33835",
+      "username": "prof3.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Andrea",
+      "lastName": "Jiménez Mora",
+      "email": "prof3.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "4761ac9f-0caf-549c-b066-c0cbe6fdebb6",
+      "username": "prof4.central-cartago",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Diego",
+      "lastName": "Mora Ramírez",
+      "email": "prof4.central-cartago@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "8cd0f829-9ad7-56d6-b761-5c8422841151",
+      "username": "admin.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Valeria",
+      "lastName": "Araya Castro",
+      "email": "admin.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin_clinica"
+      ]
+    },
+    {
+      "id": "edb8186c-f01f-5cb7-9cd6-75b0472d99d2",
+      "username": "recepcion.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Daniela",
+      "lastName": "Soto Rojas",
+      "email": "recepcion.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "recepcion"
+      ]
+    },
+    {
+      "id": "5bff1bd6-4e81-5219-8824-6f1c47d66ff7",
+      "username": "recepcion2.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Javier",
+      "lastName": "Méndez Castro",
+      "email": "recepcion2.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "recepcion"
+      ]
+    },
+    {
+      "id": "a9acb7ae-cc57-578f-b686-9352a7655fb2",
+      "username": "prof1.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Luis",
+      "lastName": "Araya Jiménez",
+      "email": "prof1.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "c8594372-cb61-5eb4-97a6-3e176a7c68a6",
+      "username": "prof2.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Diego",
+      "lastName": "Navarro Ulate",
+      "email": "prof2.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "6fa5f8b5-c7fe-5cfa-b362-1a659b98db2d",
+      "username": "prof3.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sebastián",
+      "lastName": "Brenes Solano",
+      "email": "prof3.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "cc1a8062-c429-50e3-b8f3-9f1771223b0e",
+      "username": "prof4.san-pedro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Laura",
+      "lastName": "Mora Rojas",
+      "email": "prof4.san-pedro@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "3acbbe7e-3ccd-5be2-8014-ad80076d8bf7",
+      "username": "admin.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Paula",
+      "lastName": "Mora Brenes",
+      "email": "admin.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin_clinica"
+      ]
+    },
+    {
+      "id": "8621d743-37b5-5aea-8b74-f3dd333f0006",
+      "username": "recepcion.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Diego",
+      "lastName": "Vargas Jiménez",
+      "email": "recepcion.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "recepcion"
+      ]
+    },
+    {
+      "id": "079ab471-2b14-55d4-bbcc-7b24aa3205c0",
+      "username": "recepcion2.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sofía",
+      "lastName": "Vargas Jiménez",
+      "email": "recepcion2.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "recepcion"
+      ]
+    },
+    {
+      "id": "0c0820d3-9f85-508f-8757-a7007adcd3e7",
+      "username": "prof1.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Paula",
+      "lastName": "Ramírez Mora",
+      "email": "prof1.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "059aefaa-09a1-5412-a06c-826007032eb6",
+      "username": "prof2.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Gabriela",
+      "lastName": "Ramírez Soto",
+      "email": "prof2.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "b19a097f-6ed2-5a57-b0e4-9b24a5998811",
+      "username": "prof3.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ricardo",
+      "lastName": "Rojas Solano",
+      "email": "prof3.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "id": "a9b6f12e-72a4-5589-a3d9-f97a712bdd59",
+      "username": "prof4.bella-vista",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Fernanda",
+      "lastName": "Solano Rojas",
+      "email": "prof4.bella-vista@medicitas.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Medicitas.2026",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "profesional"
+      ]
+    },
+    {
+      "username": "service-account-medicitas-api",
+      "enabled": true,
+      "serviceAccountClientId": "medicitas-api",
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "query-users",
+          "view-realm"
+        ]
+      }
+    }
+  ]
+}
