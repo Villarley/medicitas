@@ -59,4 +59,4 @@ Resultado en nuestra corrida (contenedores en una sola máquina, base con unas 6
 | Sin caché (solo PostgreSQL) | 2.62 | 2.54 | 3.41 | 0% |
 | Con caché (Redis) | 1.26 | 1.17 | 1.69 | 96% |
 
-Con caché el tiempo baja a la mitad. El 4% restante son las primeras consultas de cada combinación. La diferencia es chica en términos absolutos porque la consulta ya está bien servida por el índice gist (ver `docs/indices.md`); la ganancia real es quitarle carga a la base cuando muchas recepciones consultan a la vez, y eso se mide con las pruebas de carga de la Etapa 2.
+Con caché el tiempo baja a la mitad. El 4% restante son las primeras consultas de cada combinación. La ganancia real es quitarle carga a la base cuando muchas recepciones consultan a la vez, y eso se mide con las pruebas de carga de la Etapa 2.
