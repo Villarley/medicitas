@@ -12,11 +12,6 @@ import (
 	"medicitas/api/internal/keycloak"
 )
 
-// TestKeycloakAdmin: la cuenta de servicio crea un usuario con su rol, ese
-// usuario obtiene token, y al deshabilitarlo ya no puede. Es la pieza que
-// usan RF1 y RF2 (segunda mitad).
-//
-// Cubre: RF17 (identidad delegada), base de RF1 y RF2
 func TestKeycloakAdmin(t *testing.T) {
 	ctx := context.Background()
 	adm := keycloak.NuevoAdmin(keycloakURL, "medicitas", env("KEYCLOAK_API_CLIENT_ID", "medicitas-api"),

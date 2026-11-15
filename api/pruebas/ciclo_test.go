@@ -11,9 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestCicloDeLaCita recorre la vida de una cita y cada transición prohibida.
-//
-// Cubre: RF9, RF10, RF11, RF12, RF13, criterio de aceptación 2
 func TestCicloDeLaCita(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)
@@ -76,8 +73,6 @@ func TestCicloDeLaCita(t *testing.T) {
 	require.Equal(t, http.StatusUnprocessableEntity, r.Status)
 }
 
-// crearCitaPasada inserta directo en la base una cita reservada el lunes pasado
-// (la API no deja reservar en el pasado, pero la semilla y la vida real sí las tienen).
 func crearCitaPasada(t *testing.T, e *Escenario) uuid.UUID {
 	t.Helper()
 	hoy := time.Now().In(zonaCR)

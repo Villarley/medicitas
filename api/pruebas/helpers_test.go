@@ -48,7 +48,6 @@ var (
 	zonaCR, _   = time.LoadLocation("America/Costa_Rica")
 )
 
-// Token pide (y recuerda) un token por password grant con el client de pruebas.
 func Token(t *testing.T, usuario string) string {
 	t.Helper()
 	if v, ok := tokens.Load(usuario); ok {
@@ -68,7 +67,6 @@ func Token(t *testing.T, usuario string) string {
 	return cuerpo.AccessToken
 }
 
-// Respuesta de la API ya leída.
 type Respuesta struct {
 	Status int
 	Cuerpo []byte
@@ -79,7 +77,6 @@ func (r Respuesta) JSON(t *testing.T, destino any) {
 	require.NoError(t, json.Unmarshal(r.Cuerpo, destino), string(r.Cuerpo))
 }
 
-// Codigo devuelve error.codigo de una respuesta de error.
 func (r Respuesta) Codigo() string {
 	var e struct {
 		Error struct {
@@ -90,7 +87,6 @@ func (r Respuesta) Codigo() string {
 	return e.Error.Codigo
 }
 
-// Pedir hace una petición a la API. cuerpo puede ser nil, un string (se manda tal cual) o cualquier valor JSON.
 func Pedir(t *testing.T, metodo, ruta, token string, cuerpo any) Respuesta {
 	t.Helper()
 	var r io.Reader
@@ -118,7 +114,6 @@ func Pedir(t *testing.T, metodo, ruta, token string, cuerpo any) Respuesta {
 	return Respuesta{Status: resp.StatusCode, Cuerpo: b}
 }
 
-// subDelToken lee el sub del payload sin verificar (solo para armar datos de prueba).
 func subDelToken(t *testing.T, token string) string {
 	partes := strings.Split(token, ".")
 	require.Len(t, partes, 3)
@@ -131,9 +126,6 @@ func subDelToken(t *testing.T, token string) string {
 	return c.Sub
 }
 
-// ComoAdmin corre fn dentro de una transacción directa a la base con el perfil
-// db_admin_clinica de la clínica dada (mismo mecanismo que usa la API).
-// Se usa para preparar datos que todavía no tienen ruta propia.
 func ComoAdmin(t *testing.T, usuarioAdmin string, fn func(ctx context.Context, tx pgx.Tx) error) {
 	t.Helper()
 	ctx := context.Background()
@@ -155,7 +147,6 @@ func ComoAdmin(t *testing.T, usuarioAdmin string, fn func(ctx context.Context, t
 	require.NoError(t, tx.Commit(ctx))
 }
 
-// Escenario: datos propios de una prueba en Clínica Central Cartago.
 type Escenario struct {
 	Prof, Prof2      uuid.UUID // atienden lunes 08:00-12:00 y 13:00-17:00
 	Serv30, Serv45   uuid.UUID
@@ -170,7 +161,6 @@ const (
 	usuarioAdmin      = "admin.central-cartago"
 )
 
-// NuevoEscenario crea dos profesionales, dos servicios (30 y 45 min) y cinco pacientes nuevos.
 func NuevoEscenario(t *testing.T) *Escenario {
 	t.Helper()
 	sufijo := uuid.NewString()[:8]
@@ -234,7 +224,6 @@ func NuevoEscenario(t *testing.T) *Escenario {
 	return e
 }
 
-// Hora devuelve el lunes del escenario más `semanas`, a la hora local dada.
 func (e *Escenario) Hora(semanas, hora, minuto int) time.Time {
 	d := e.Lunes.AddDate(0, 0, 7*semanas)
 	return time.Date(d.Year(), d.Month(), d.Day(), hora, minuto, 0, 0, zonaCR)
@@ -244,14 +233,12 @@ func (e *Escenario) Fecha(semanas int) string {
 	return e.Lunes.AddDate(0, 0, 7*semanas).Format("2006-01-02")
 }
 
-// Reservar es un atajo para POST /citas.
 func (e *Escenario) Reservar(t *testing.T, token string, paciente, prof, servicio uuid.UUID, inicio time.Time) Respuesta {
 	return Pedir(t, http.MethodPost, "/citas", token, map[string]any{
 		"paciente_id": paciente, "profesional_id": prof, "servicio_id": servicio, "inicio": inicio.Format(time.RFC3339),
 	})
 }
 
-// ContarVigentesQueCruzan cuenta en la base las citas reservadas del profesional que se cruzan con [ini, fin).
 func ContarVigentesQueCruzan(t *testing.T, prof uuid.UUID, ini, fin time.Time) int {
 	t.Helper()
 	var n int
@@ -275,7 +262,6 @@ type citaJSON struct {
 
 type consulta func(sql string, destinos ...any)
 
-// ComoAdminDe es como ComoAdmin pero con una función de consulta simple de una fila.
 func ComoAdminDe(t *testing.T, usuario string, fn func(q consulta)) {
 	t.Helper()
 	ComoAdmin(t, usuario, func(ctx context.Context, tx pgx.Tx) error {

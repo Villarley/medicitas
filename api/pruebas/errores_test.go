@@ -8,9 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestErroresNoTumbanLaAPI: entradas malas reciben su código y el servicio sigue vivo.
-//
-// Cubre: requisitos de operación 2 y 3
 func TestErroresNoTumbanLaAPI(t *testing.T) {
 	tok := Token(t, usuarioRecepcion)
 	casos := []struct {

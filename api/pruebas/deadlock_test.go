@@ -11,13 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestDeadlockIntercambio: dos recepcionistas intercambian dos citas a la vez
-// (A al espacio de B y B al de A). Cada transacción libera su espacio y espera
-// al de la otra: Postgres detecta el deadlock, aborta una y la API reintenta.
-// Se exige que nada se cuelgue, que no haya 500 y que nunca queden dos citas
-// vigentes en el mismo espacio.
-//
-// Cubre: RF10, I1, I7
 func TestDeadlockIntercambio(t *testing.T) {
 	e := NuevoEscenario(t)
 	tokens := []string{Token(t, usuarioRecepcion), Token(t, usuarioRecepcion2)}

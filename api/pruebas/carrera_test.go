@@ -9,12 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestCarreraUltimoEspacio es la pregunta rectora: dos recepcionistas reservan
-// el mismo espacio exactamente al mismo tiempo. Se repite 25 veces; en cada
-// ronda tiene que haber exactamente una reserva concedida (201) y un 409
-// ESPACIO_TOMADO, y en la base una sola cita vigente en ese intervalo.
-//
-// Cubre: RF9, I1, criterio de aceptación 6
 func TestCarreraUltimoEspacio(t *testing.T) {
 	e := NuevoEscenario(t)
 	tokens := []string{Token(t, usuarioRecepcion), Token(t, usuarioRecepcion2)}
@@ -52,10 +46,6 @@ func TestCarreraUltimoEspacio(t *testing.T) {
 	}
 }
 
-// TestCarreraMismoPaciente: el mismo paciente en dos profesionales a la misma
-// hora, al mismo tiempo. Una sola gana; la otra recibe PACIENTE_OCUPADO.
-//
-// Cubre: RF9, I2
 func TestCarreraMismoPaciente(t *testing.T) {
 	e := NuevoEscenario(t)
 	tokens := []string{Token(t, usuarioRecepcion), Token(t, usuarioRecepcion2)}

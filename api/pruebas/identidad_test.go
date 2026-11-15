@@ -12,10 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestIdentidad: sin token 401, token falsificado 401, rol que no corresponde 403,
-// rol correcto 2xx. La firma se valida contra las llaves públicas de Keycloak.
-//
-// Cubre: RF17, criterio de aceptación 3
 func TestIdentidad(t *testing.T) {
 	e := NuevoEscenario(t)
 	ruta := "/disponibilidad?profesional_id=" + e.Prof.String() + "&servicio_id=" + e.Serv30.String() + "&fecha=" + e.Fecha(0)

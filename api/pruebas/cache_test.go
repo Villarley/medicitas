@@ -34,11 +34,6 @@ func contiene(d dispJSON, inicio time.Time) bool {
 	return false
 }
 
-// TestCacheNoMiente: consultar, reservar uno de los espacios devueltos y volver
-// a consultar enseguida muestra el espacio tomado, sin esperar a que expire nada.
-// Cancelar lo devuelve en la siguiente consulta.
-//
-// Cubre: RF7, RF9, RF11, I7, I8, criterio de aceptación 5
 func TestCacheNoMiente(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)
@@ -76,9 +71,6 @@ func TestCacheNoMiente(t *testing.T) {
 	require.False(t, contiene(consultar(t, tok, e, 1), destino))
 }
 
-// TestDisponibilidadSinCacheIgualConCache: la respuesta de Redis y la de la base coinciden.
-//
-// Cubre: RF7, I8
 func TestDisponibilidadSinCacheIgualConCache(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)
@@ -98,9 +90,6 @@ func TestDisponibilidadSinCacheIgualConCache(t *testing.T) {
 	require.Equal(t, len(sinCache.Espacios), len(conCache.Espacios))
 }
 
-// TestDisponibilidadPorServicio: RF8 devuelve los profesionales con espacio en el rango.
-//
-// Cubre: RF8
 func TestDisponibilidadPorServicio(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)

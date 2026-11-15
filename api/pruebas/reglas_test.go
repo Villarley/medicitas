@@ -13,9 +13,6 @@ import (
 
 func jsonDecode(resp *http.Response, v any) error { return json.NewDecoder(resp.Body).Decode(v) }
 
-// TestHorarioYBloqueos: no se reserva fuera del horario ni dentro de un bloqueo.
-//
-// Cubre: RF9, I3
 func TestHorarioYBloqueos(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)
@@ -42,10 +39,6 @@ func TestHorarioYBloqueos(t *testing.T) {
 	require.Equal(t, http.StatusCreated, r.Status, "justo al terminar el bloqueo sí se puede")
 }
 
-// TestDuracionInmutable: la duración la manda el servicio. Campos extra como
-// "fin" o "duracion" en el cuerpo se ignoran.
-//
-// Cubre: RF9, I4
 func TestDuracionInmutable(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)
@@ -75,11 +68,6 @@ func TestDuracionInmutable(t *testing.T) {
 	require.ErrorContains(t, err, "no se modifican")
 }
 
-// TestReprogramarSolapandoConsigoMisma: mover una cita de 45 min media hora
-// más tarde se cruza con su propio espacio viejo; como el viejo se libera en
-// la misma transacción, funciona.
-//
-// Cubre: RF10, I7
 func TestReprogramarSolapandoConsigoMisma(t *testing.T) {
 	e := NuevoEscenario(t)
 	tok := Token(t, usuarioRecepcion)

@@ -9,12 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestFugaEnCitasYDisponibilidad: una recepcionista de Central Cartago intenta
-// leer y tocar datos de San Pedro por las rutas de citas y disponibilidad.
-// Todo lo ajeno responde 404, como si no existiera.
-// (La segunda mitad agrega lo mismo para pacientes, catálogo, agenda y bitácora.)
-//
-// Cubre: I5, RF7, RF9, RF10, RF11, criterio de aceptación 4
 func TestFugaEnCitasYDisponibilidad(t *testing.T) {
 	e := NuevoEscenario(t)
 	tokCentral := Token(t, usuarioRecepcion)
@@ -55,8 +49,6 @@ type datosAjenos struct {
 	inicio                                         time.Time
 }
 
-// datosDeSanPedro toma un profesional y su servicio de la semilla de San Pedro
-// y reserva el primer espacio libre que encuentre.
 func datosDeSanPedro(t *testing.T, tok string) datosAjenos {
 	t.Helper()
 	var d datosAjenos

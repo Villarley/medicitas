@@ -9,10 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestBitacoraInmutable: ni con el perfil de admin de clínica se puede cambiar
-// o borrar la bitácora. Lo impide el motor (sin permisos y con trigger), no la API.
-//
-// Cubre: RF18, I6
 func TestBitacoraInmutable(t *testing.T) {
 	e := NuevoEscenario(t)
 	// Una entrada legítima, escrita como la escribiría la API.
