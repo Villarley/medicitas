@@ -149,11 +149,15 @@ func CalcularDesdeBase(ctx context.Context, tx pgx.Tx, prof, servicio uuid.UUID,
 	if err != nil {
 		return nil, err
 	}
-	// Esta forma de la condición la sirve el índice gist de cita_sin_solape_profesional.
+	// Solape con el día escrito como rango sobre inicio, para que el índice parcial
+	// idx_cita_vigente_prof_inicio (profesional_id, inicio) lo resuelva en el Index
+	// Cond en vez de leer todas las citas vigentes del profesional y filtrar. Es
+	// exacto: un servicio dura como mucho 480 min, así que una cita que se cruza
+	// con el día empezó a lo sumo 8 h antes. Ver docs/indices.md.
 	citas, err := intervalos(ctx, tx,
 		`SELECT inicio, fin FROM cita
 		  WHERE profesional_id = $1 AND estado = 'reservada'
-		    AND tstzrange(inicio, fin, '[)') && tstzrange($2, $3, '[)')`,
+		    AND inicio >= $2::timestamptz - interval '480 minutes' AND inicio < $3 AND fin > $2`,
 		prof, iniDia, finDia)
 	if err != nil {
 		return nil, err
