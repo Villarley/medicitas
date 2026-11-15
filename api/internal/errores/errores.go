@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-// Error lleva el código HTTP y el código de negocio que ve el cliente.
 type Error struct {
 	Status  int
 	Codigo  string
@@ -29,7 +28,6 @@ func Reintentar() *Error {
 }
 func Interno() *Error { return Nuevo(http.StatusInternalServerError, "ERROR_INTERNO", "Error interno") }
 
-// Como devuelve el *Error que haya en la cadena, o nil.
 func Como(err error) *Error {
 	var e *Error
 	if errors.As(err, &e) {

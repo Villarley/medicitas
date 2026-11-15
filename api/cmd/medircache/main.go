@@ -1,4 +1,4 @@
-// Comando medircache compara la consulta de disponibilidad (RF7) sin caché y con caché.
+// Comando medircache compara la consulta de disponibilidad sin caché y con caché.
 //
 //	docker compose exec api go run ./cmd/medircache
 //
@@ -78,7 +78,6 @@ func main() {
 	fila("Con caché (Redis)", con, aCon)
 }
 
-// combinaciones toma 10 (profesional, servicio, fecha) de la semilla de Central Cartago, en días hábiles próximos.
 func combinaciones(dbURL, token string) ([][3]string, error) {
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, dbURL)
@@ -126,7 +125,6 @@ func combinaciones(dbURL, token string) ([][3]string, error) {
 	return out, nil
 }
 
-// subDe lee el sub del token sin verificarlo (solo para elegir datos de la medición).
 func subDe(token string) string {
 	partes := strings.Split(token, ".")
 	if len(partes) != 3 {

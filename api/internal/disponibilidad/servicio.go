@@ -33,7 +33,6 @@ type Resultado struct {
 	Fuente        string    `json:"fuente"`
 }
 
-// Consultar resuelve RF7. Con usarCache=false va directo a la base (medición).
 func (s *Servicio) Consultar(ctx context.Context, ident identidad.Identidad, prof, servicio uuid.UUID, fecha string, usarCache bool) (*Resultado, error) {
 	dia, err := time.Parse(FormatoFecha, fecha)
 	if err != nil {
@@ -77,8 +76,6 @@ func (s *Servicio) Consultar(ctx context.Context, ident identidad.Identidad, pro
 	return &Resultado{Fecha: fecha, ProfesionalID: prof, ServicioID: servicio, Espacios: espacios, Fuente: "base"}, nil
 }
 
-// CalcularDesdeBase lee horario, bloqueos y citas del día dentro de la
-// transacción del usuario (RLS activo) y llama a CalcularEspacios.
 func CalcularDesdeBase(ctx context.Context, tx pgx.Tx, prof, servicio uuid.UUID, dia time.Time, ahora time.Time) ([]Espacio, error) {
 	var zonaNombre string
 	if err := tx.QueryRow(ctx, `SELECT zona_horaria FROM clinica WHERE id = app_clinica_actual()`).Scan(&zonaNombre); err != nil {
@@ -193,8 +190,6 @@ func (s *Servicio) ahora() time.Time {
 	return time.Now()
 }
 
-// FechaLocal devuelve la fecha (AAAA-MM-DD) de un instante en la zona de la clínica.
-// La usan las operaciones de citas para saber qué entrada de caché invalidar.
 func FechaLocal(t time.Time, zona *time.Location) string {
 	return t.In(zona).Format(FormatoFecha)
 }

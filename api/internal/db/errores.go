@@ -9,7 +9,6 @@ import (
 	"medicitas/api/internal/errores"
 )
 
-// EsReintentable: deadlock detectado (40P01) o falla de serialización (40001).
 func EsReintentable(err error) bool {
 	var pg *pgconn.PgError
 	if errors.As(err, &pg) {
@@ -18,9 +17,6 @@ func EsReintentable(err error) bool {
 	return false
 }
 
-// Traducir convierte un error del motor en el error de dominio de la tabla 3.3
-// del contrato. Los errores que ya son de dominio pasan igual. Lo desconocido
-// queda como está (el manejador HTTP lo convierte en 500 y lo registra).
 func Traducir(err error) error {
 	if err == nil {
 		return nil

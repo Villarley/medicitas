@@ -28,8 +28,6 @@ type Validador struct {
 	parser *jwt.Parser
 }
 
-// NuevoValidador baja las llaves públicas del JWKS de Keycloak (y las refresca
-// solo cuando aparece un kid nuevo). Reintenta mientras Keycloak termina de levantar.
 func NuevoValidador(ctx context.Context, jwksURL, emisor, audiencia string) (*Validador, error) {
 	var kf keyfunc.Keyfunc
 	var err error
@@ -56,8 +54,6 @@ func NuevoValidador(ctx context.Context, jwksURL, emisor, audiencia string) (*Va
 	}, nil
 }
 
-// Validar verifica firma, algoritmo, emisor, audiencia y expiración.
-// Devuelve el sub y los roles de dominio que trae el token.
 func (v *Validador) Validar(token string) (string, []string, error) {
 	claims := jwt.MapClaims{}
 	if _, err := v.parser.ParseWithClaims(token, claims, v.kf.Keyfunc); err != nil {
@@ -80,9 +76,6 @@ func (v *Validador) Validar(token string) (string, []string, error) {
 	return sub, roles, nil
 }
 
-// Middleware exige un token válido (401 si no) y un usuario activo en la base
-// (403 si no). La clínica y el rol efectivo salen de la base, no del token:
-// el token tiene que traer ese mismo rol para que pase.
 func Middleware(v *Validador, store *db.Store, responderError func(http.ResponseWriter, error)) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -121,8 +114,6 @@ func Middleware(v *Validador, store *db.Store, responderError func(http.Response
 	}
 }
 
-// RequiereRoles corta con 403 si el rol de la identidad no está en la lista
-// (primera capa de la matriz; la segunda son los perfiles y RLS del motor).
 func RequiereRoles(responderError func(http.ResponseWriter, error), roles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

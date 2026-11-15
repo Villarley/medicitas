@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Roles del dominio, iguales a los roles de realm en Keycloak y a rol.codigo en la base.
 const (
 	AdminPlataforma = "admin_plataforma"
 	AdminClinica    = "admin_clinica"
@@ -15,7 +14,6 @@ const (
 	Profesional     = "profesional"
 )
 
-// Identidad sale del token (Sub) y de la base (el resto). La clínica nunca viene de la petición.
 type Identidad struct {
 	Sub       string
 	UsuarioID uuid.UUID

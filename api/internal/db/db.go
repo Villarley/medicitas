@@ -17,8 +17,6 @@ import (
 	"medicitas/api/internal/identidad"
 )
 
-// perfiles traduce el rol del dominio al rol de base de datos.
-// SET ROLE no acepta parámetros, por eso el nombre sale SOLO de este mapa fijo.
 var perfiles = map[string]string{
 	identidad.AdminPlataforma: "db_plataforma",
 	identidad.AdminClinica:    "db_admin_clinica",
@@ -45,7 +43,6 @@ func Conectar(ctx context.Context, url string) (*Store, error) {
 	return &Store{Pool: pool}, nil
 }
 
-// FilaIdentidad es lo que devuelve resolver_identidad(sub).
 type FilaIdentidad struct {
 	UsuarioID     uuid.UUID
 	ClinicaID     uuid.NullUUID
@@ -54,8 +51,6 @@ type FilaIdentidad struct {
 	ClinicaActiva bool
 }
 
-// ResolverIdentidad busca el usuario por el sub del token. Se llama antes de
-// elegir perfil, porque todavía no sabemos la clínica. Devuelve (nil, nil) si no existe.
 func (s *Store) ResolverIdentidad(ctx context.Context, sub uuid.UUID) (*FilaIdentidad, error) {
 	var f FilaIdentidad
 	err := s.Pool.QueryRow(ctx,
@@ -70,10 +65,6 @@ func (s *Store) ResolverIdentidad(ctx context.Context, sub uuid.UUID) (*FilaIden
 	return &f, nil
 }
 
-// EnTransaccion abre una transacción READ COMMITTED, toma el perfil del rol,
-// fija app.clinica_id y app.usuario_id, corre fn y confirma. Si el motor
-// reporta deadlock (40P01) o falla de serialización (40001), reintenta todo
-// hasta 3 veces con espera exponencial y jitter.
 func (s *Store) EnTransaccion(ctx context.Context, ident identidad.Identidad, fn func(tx pgx.Tx) error) error {
 	for intento := 0; ; intento++ {
 		err := s.unaVez(ctx, ident, fn)

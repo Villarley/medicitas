@@ -1,4 +1,4 @@
-// Package citas implementa el ciclo de vida de la cita (RF9 a RF13).
+// Package citas implementa el ciclo de vida de la cita.
 // Las reglas duras (solapes, horario, estados, duración) las garantiza el
 // motor; aquí se arma la transacción, se validan entradas y se invalida la caché.
 package citas
@@ -36,7 +36,6 @@ type Cita struct {
 	CerradaEn         *time.Time    `json:"cerrada_en"`
 }
 
-// Columnas en el orden que espera escanear().
 const Columnas = `id, clinica_id, paciente_id, profesional_id, servicio_id, inicio, fin, estado::text,
 	motivo_cancelacion, cita_origen_id, creada_por, creada_en, cerrada_por, cerrada_en`
 
@@ -47,7 +46,6 @@ func escanear(f pgx.Row) (*Cita, error) {
 	return &c, err
 }
 
-// EscanearFilas sirve para listados (agenda, historial) que use la otra mitad del proyecto.
 func EscanearFilas(filas pgx.Rows) ([]Cita, error) {
 	return pgx.CollectRows(filas, func(f pgx.CollectableRow) (Cita, error) {
 		c, err := escanear(f)
@@ -88,7 +86,6 @@ func (r SolicitudReserva) validar(ahora time.Time) error {
 	return nil
 }
 
-// toque es una (profesional, fecha local) cuya disponibilidad cambió.
 type toque struct {
 	prof  uuid.UUID
 	fecha string
@@ -122,9 +119,6 @@ func existe(ctx context.Context, tx pgx.Tx, sql string, id uuid.UUID, queEs stri
 	return nil
 }
 
-// Reservar (RF9). Desenlaces: 201 concedida, 409 ESPACIO_TOMADO o PACIENTE_OCUPADO, 422/404 inválida.
-// Dos reservas simultáneas sobre el mismo espacio: la restricción de exclusión
-// hace que la segunda espere a la primera y falle con 23P01 cuando la primera confirma.
 func (s *Servicio) Reservar(ctx context.Context, ident identidad.Identidad, r SolicitudReserva) (*Cita, error) {
 	if err := r.validar(s.ahora()); err != nil {
 		return nil, err
@@ -146,7 +140,7 @@ func (s *Servicio) Reservar(ctx context.Context, ident identidad.Identidad, r So
 		if err := existe(ctx, tx, `SELECT EXISTS (SELECT 1 FROM servicio WHERE id = $1)`, r.ServicioID, "Servicio"); err != nil {
 			return err
 		}
-		// fin se manda igual a inicio: el trigger lo recalcula con la duración del servicio (I4).
+		// fin se manda igual a inicio: el trigger lo recalcula con la duración del servicio.
 		cita, err = escanear(tx.QueryRow(ctx,
 			`INSERT INTO cita (clinica_id, paciente_id, profesional_id, servicio_id, inicio, fin, creada_por)
 			 VALUES (app_clinica_actual(), $1, $2, $3, $4, $4, app_usuario_actual())
@@ -179,9 +173,6 @@ type SolicitudReprogramar struct {
 	ProfesionalID uuid.NullUUID `json:"profesional_id"`
 }
 
-// Reprogramar (RF10): en una sola transacción la cita vieja pasa a
-// 'reprogramada' (liberando su espacio) y nace la nueva con cita_origen_id.
-// Nunca hay un momento con las dos ocupando espacio ni con la cita duplicada.
 func (s *Servicio) Reprogramar(ctx context.Context, ident identidad.Identidad, id uuid.UUID, r SolicitudReprogramar) (*Cita, error) {
 	if r.Inicio.IsZero() {
 		return nil, errores.Invalido("Falta inicio")
@@ -233,7 +224,6 @@ func (s *Servicio) Reprogramar(ctx context.Context, ident identidad.Identidad, i
 	return nueva, nil
 }
 
-// Cancelar (RF11). El motor exige el motivo y pone cerrada_por desde app.usuario_id.
 func (s *Servicio) Cancelar(ctx context.Context, ident identidad.Identidad, id uuid.UUID, motivo string) (*Cita, error) {
 	motivo = strings.TrimSpace(motivo)
 	if motivo == "" {
@@ -242,7 +232,6 @@ func (s *Servicio) Cancelar(ctx context.Context, ident identidad.Identidad, id u
 	return s.cerrar(ctx, ident, id, "cancelada", &motivo, true)
 }
 
-// RegistrarDesenlace (RF12): atendida o ausente, solo después de la hora de inicio (lo valida el motor).
 func (s *Servicio) RegistrarDesenlace(ctx context.Context, ident identidad.Identidad, id uuid.UUID, desenlace string) (*Cita, error) {
 	if desenlace != "atendida" && desenlace != "ausente" {
 		return nil, errores.Invalido("desenlace debe ser 'atendida' o 'ausente'")

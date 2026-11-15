@@ -1,6 +1,6 @@
 // Package keycloak habla con la Admin REST API de Keycloak usando la cuenta de
-// servicio del client medicitas-api. Lo usan el alta de clínicas (RF1) y la
-// gestión de usuarios (RF2). No emite ni firma tokens de usuario: eso es de Keycloak.
+// servicio del client medicitas-api. Lo usan el alta de clínicas y la
+// gestión de usuarios. No emite ni firma tokens de usuario: eso es de Keycloak.
 package keycloak
 
 import (
@@ -39,7 +39,6 @@ type NuevoUsuario struct {
 	Rol       string // uno de los 4 roles de realm
 }
 
-// tokenServicio pide (y guarda hasta que casi vence) un token client_credentials.
 func (a *Admin) tokenServicio(ctx context.Context) (string, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -91,12 +90,8 @@ func (a *Admin) pedir(ctx context.Context, metodo, ruta string, cuerpo any) (*ht
 	return a.http.Do(req)
 }
 
-// ErrUsuarioExiste: el username o correo ya está en Keycloak (la API lo traduce a 409).
 var ErrUsuarioExiste = fmt.Errorf("el usuario ya existe en el proveedor de identidad")
 
-// CrearUsuario crea el usuario, le pone la clave y le asigna el rol de realm.
-// Devuelve el id de Keycloak, que es el sub de sus tokens (va a usuario.idp_sub).
-// Si falla la asignación del rol, borra el usuario para no dejar basura.
 func (a *Admin) CrearUsuario(ctx context.Context, u NuevoUsuario) (string, error) {
 	resp, err := a.pedir(ctx, http.MethodPost, "/users", map[string]any{
 		"username": u.Username, "enabled": true, "emailVerified": true,
@@ -151,7 +146,6 @@ func (a *Admin) asignarRol(ctx context.Context, id, rol, metodo string) error {
 	return nil
 }
 
-// CambiarRol quita el rol anterior y pone el nuevo (RF2).
 func (a *Admin) CambiarRol(ctx context.Context, id, anterior, nuevo string) error {
 	if err := a.asignarRol(ctx, id, anterior, http.MethodDelete); err != nil {
 		return err
@@ -159,7 +153,6 @@ func (a *Admin) CambiarRol(ctx context.Context, id, anterior, nuevo string) erro
 	return a.asignarRol(ctx, id, nuevo, http.MethodPost)
 }
 
-// Deshabilitar es la baja lógica del lado del proveedor (RF2): ya no puede pedir tokens.
 func (a *Admin) Deshabilitar(ctx context.Context, id string) error {
 	resp, err := a.pedir(ctx, http.MethodPut, "/users/"+url.PathEscape(id), map[string]any{"enabled": false})
 	if err != nil {
@@ -172,7 +165,6 @@ func (a *Admin) Deshabilitar(ctx context.Context, id string) error {
 	return nil
 }
 
-// BorrarUsuario solo se usa como compensación cuando el alta falla en la base.
 func (a *Admin) BorrarUsuario(ctx context.Context, id string) error {
 	resp, err := a.pedir(ctx, http.MethodDelete, "/users/"+url.PathEscape(id), nil)
 	if err != nil {

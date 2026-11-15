@@ -1,6 +1,6 @@
-// Package cache guarda en Redis la disponibilidad calculada (RF7).
+// Package cache guarda en Redis la disponibilidad calculada.
 //
-// Coherencia (I8) por versiones, no por borrado de claves:
+// La coherencia se mantiene por versiones, no por borrado de claves:
 //
 //	dispgen:{clinica}:{profesional}          sube con cambios de horario, bloqueos o servicios
 //	dispver:{clinica}:{profesional}:{fecha}  sube con cada reserva, cancelación o reprogramación
@@ -44,7 +44,6 @@ func claveVer(c, p uuid.UUID, fecha string) string {
 	return fmt.Sprintf("dispver:%s:%s:%s", c, p, fecha)
 }
 
-// Clave arma la clave del valor con las versiones vigentes. ok=false si Redis no respondió.
 func (k *Cache) Clave(ctx context.Context, clinica, prof, servicio uuid.UUID, fecha string) (string, bool) {
 	vals, err := k.rdb.MGet(ctx, claveGen(clinica, prof), claveVer(clinica, prof, fecha)).Result()
 	if err != nil {
@@ -72,7 +71,6 @@ func (k *Cache) Guardar(ctx context.Context, clave string, valor []byte) {
 	}
 }
 
-// InvalidarFecha se llama DESPUÉS del commit de una reserva, cancelación o reprogramación.
 func (k *Cache) InvalidarFecha(ctx context.Context, clinica, prof uuid.UUID, fecha string) {
 	clave := claveVer(clinica, prof, fecha)
 	pipe := k.rdb.TxPipeline()
@@ -83,7 +81,6 @@ func (k *Cache) InvalidarFecha(ctx context.Context, clinica, prof uuid.UUID, fec
 	}
 }
 
-// InvalidarProfesional se llama después de cambiar horarios, bloqueos o servicios del profesional.
 func (k *Cache) InvalidarProfesional(ctx context.Context, clinica, prof uuid.UUID) {
 	if err := k.rdb.Incr(ctx, claveGen(clinica, prof)).Err(); err != nil {
 		slog.Error("no se pudo invalidar la caché", "profesional", prof, "error", err)

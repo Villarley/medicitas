@@ -11,7 +11,6 @@ import (
 	"medicitas/api/internal/errores"
 )
 
-// GET /disponibilidad?profesional_id&servicio_id&fecha=AAAA-MM-DD  (RF7)
 func (d *Deps) consultarDisponibilidad(w http.ResponseWriter, r *http.Request) {
 	prof, err := QueryUUID(r, "profesional_id")
 	if err != nil {
@@ -45,7 +44,6 @@ type profesionalDisponible struct {
 	Dias          []diaConEspacios `json:"dias"`
 }
 
-// GET /disponibilidad/servicio?servicio_id&desde&hasta  (RF8, máximo 14 días)
 func (d *Deps) disponibilidadPorServicio(w http.ResponseWriter, r *http.Request) {
 	srv, err := QueryUUID(r, "servicio_id")
 	if err != nil {
