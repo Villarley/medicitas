@@ -16,7 +16,6 @@ import (
 	"medicitas/api/internal/keycloak"
 )
 
-// Deps son las piezas que comparten todos los manejadores.
 type Deps struct {
 	Store               *db.Store
 	Cache               *cache.Cache
@@ -27,7 +26,6 @@ type Deps struct {
 	CachePermitirBypass bool
 }
 
-// Atajos de roles para la matriz de permisos (sección 5 del contrato).
 var (
 	soloPlataforma    = []string{identidad.AdminPlataforma}
 	soloAdmin         = []string{identidad.AdminClinica}
@@ -54,19 +52,18 @@ func Router(d *Deps) http.Handler {
 			r.Use(auth.Middleware(d.Validador, d.Store, Error))
 			permitir := func(roles []string) func(http.Handler) http.Handler { return auth.RequiereRoles(Error, roles...) }
 
-			// RF7, RF8
+			// Disponibilidad
 			r.With(permitir(rolesDeClinica)).Get("/disponibilidad", d.consultarDisponibilidad)
 			r.With(permitir(rolesDeClinica)).Get("/disponibilidad/servicio", d.disponibilidadPorServicio)
 
-			// RF9 a RF13
+			// Citas
 			r.With(permitir(adminYRecepcion)).Post("/citas", d.reservar)
 			r.With(permitir(rolesDeClinica)).Get("/citas/{id}", d.obtenerCita)
 			r.With(permitir(adminYRecepcion)).Post("/citas/{id}/reprogramar", d.reprogramar)
 			r.With(permitir(adminYRecepcion)).Post("/citas/{id}/cancelar", d.cancelar)
 			r.With(permitir(rolesDeClinica)).Post("/citas/{id}/desenlace", d.desenlace)
 
-			// Segunda mitad del proyecto (ver rutas_segunda_mitad.go).
-			registrarSegundaMitad(r, d, permitir)
+			registrarGestion(r, d, permitir)
 		})
 	})
 	return r
