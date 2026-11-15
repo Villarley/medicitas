@@ -1,4 +1,4 @@
--- MediCitas · permisos por perfil (menor privilegio) y Row-Level Security (I5)
+-- MediCitas · permisos por perfil (menor privilegio) y Row-Level Security (aislamiento entre clínicas)
 SET ROLE medicitas_owner;
 
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
@@ -46,7 +46,7 @@ GRANT INSERT ON auditoria TO db_profesional;
 -- La identidad de auditoria necesita USAGE de su secuencia para insertar.
 GRANT USAGE ON SEQUENCE auditoria_id_seq TO db_admin_clinica, db_recepcion, db_profesional;
 
--- Nadie tiene UPDATE ni DELETE sobre auditoria (I6). El trigger lo refuerza
+-- Nadie tiene UPDATE ni DELETE sobre auditoria. El trigger lo refuerza
 -- incluso para el dueño.
 
 -- ---------------------------------------------------------------
@@ -111,7 +111,7 @@ CREATE POLICY solo_propios_upd ON bloqueo_agenda AS RESTRICTIVE FOR UPDATE TO db
 CREATE POLICY solo_propios_del ON bloqueo_agenda AS RESTRICTIVE FOR DELETE TO db_profesional
   USING (profesional_id = mi_profesional());
 
--- Desenlace (RF12): la matriz dice "sí" para el profesional sin limitarlo a sus citas,
+-- Desenlace: la matriz dice "sí" para el profesional sin limitarlo a sus citas,
 -- así que no se restringe (la matriz no se puede reducir). Lo que sí se limita
 -- es qué puede cambiar: solo estado/cierre (GRANT por columna) y solo a
 -- atendida o ausente (trigger, MC010).

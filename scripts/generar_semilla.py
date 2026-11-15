@@ -57,7 +57,7 @@ NOMBRES = ["Andrea", "Luis", "María José", "Carlos", "Daniela", "José Pablo",
 APELLIDOS = ["Rojas", "Vargas", "Jiménez", "Mora", "Solano", "Araya", "Quesada", "Chaves", "Brenes",
              "Calderón", "Salas", "Navarro", "Alfaro", "Castro", "Ramírez", "Soto", "Méndez", "Ulate"]
 
-# Jornada partida (RF5): mañana y tarde, lunes a viernes; algunos atienden sábado.
+# Jornada partida: mañana y tarde, lunes a viernes; algunos atienden sábado.
 JORNADA = [("08:00", "12:00"), ("13:00", "17:00")]
 
 

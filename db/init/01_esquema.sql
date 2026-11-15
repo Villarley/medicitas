@@ -72,7 +72,7 @@ CREATE TABLE usuario (
   creado_en      timestamptz NOT NULL DEFAULT now(),
   baja_en        timestamptz,
   UNIQUE (clinica_id, id),
-  -- RF2: el admin de plataforma no pertenece a ninguna clínica; todos los demás a exactamente una.
+  -- El admin de plataforma no pertenece a ninguna clínica; todos los demás a exactamente una.
   CONSTRAINT usuario_clinica_segun_rol CHECK ((rol_codigo = 'admin_plataforma') = (clinica_id IS NULL)),
   CONSTRAINT usuario_baja_coherente CHECK (activo OR baja_en IS NOT NULL)
 );
@@ -112,7 +112,7 @@ CREATE TABLE profesional (
   FOREIGN KEY (clinica_id, usuario_id) REFERENCES usuario(clinica_id, id)
 );
 
--- RF4: servicios que cada profesional está habilitado para atender.
+-- Servicios que cada profesional está habilitado para atender.
 CREATE TABLE profesional_servicio (
   clinica_id     uuid NOT NULL REFERENCES clinica(id),
   profesional_id uuid NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE profesional_servicio (
 -- ---------------------------------------------------------------
 -- Agenda
 -- ---------------------------------------------------------------
--- RF5: horario semanal, varios bloques por día. Horas locales de la clínica.
+-- Horario semanal, varios bloques por día. Horas locales de la clínica.
 CREATE TABLE horario_atencion (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   clinica_id     uuid NOT NULL REFERENCES clinica(id),
@@ -142,7 +142,7 @@ CREATE TABLE horario_atencion (
   )
 );
 
--- RF6: bloqueos por vacaciones o permisos.
+-- Bloqueos por vacaciones o permisos.
 CREATE TABLE bloqueo_agenda (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   clinica_id     uuid NOT NULL REFERENCES clinica(id),
@@ -179,7 +179,7 @@ CREATE TABLE paciente (
 -- Citas
 -- fin es derivable (inicio + duración del servicio). Se guarda a propósito:
 -- la restricción de exclusión necesita el rango completo en la misma fila.
--- Un trigger lo calcula siempre desde el servicio (I4), nadie lo escribe.
+-- Un trigger lo calcula siempre desde el servicio, nadie lo escribe.
 -- ---------------------------------------------------------------
 CREATE TABLE cita (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -191,7 +191,7 @@ CREATE TABLE cita (
   fin                timestamptz NOT NULL,
   estado             estado_cita NOT NULL DEFAULT 'reservada',
   motivo_cancelacion text,
-  cita_origen_id     uuid UNIQUE REFERENCES cita(id),   -- RF10: de qué cita viene
+  cita_origen_id     uuid UNIQUE REFERENCES cita(id),   -- de qué cita viene si fue reprogramada
   creada_por         uuid NOT NULL,
   creada_en          timestamptz NOT NULL DEFAULT now(),
   cerrada_por        uuid,
@@ -205,17 +205,17 @@ CREATE TABLE cita (
   CHECK (fin > inicio),
   CONSTRAINT cita_motivo_si_cancelada CHECK ((estado = 'cancelada') = (motivo_cancelacion IS NOT NULL)),
   CONSTRAINT cita_cierre_coherente CHECK ((estado = 'reservada') = (cerrada_en IS NULL)),
-  -- I1: un profesional nunca tiene dos citas vigentes solapadas.
+  -- Un profesional nunca tiene dos citas vigentes solapadas.
   CONSTRAINT cita_sin_solape_profesional EXCLUDE USING gist (
     profesional_id WITH =, tstzrange(inicio, fin, '[)') WITH &&
   ) WHERE (estado = 'reservada'),
-  -- I2: un paciente nunca tiene dos citas vigentes solapadas (el paciente es de una sola clínica).
+  -- Un paciente nunca tiene dos citas vigentes solapadas (el paciente es de una sola clínica).
   CONSTRAINT cita_sin_solape_paciente EXCLUDE USING gist (
     paciente_id WITH =, tstzrange(inicio, fin, '[)') WITH &&
   ) WHERE (estado = 'reservada')
 );
 
--- RF15: nota clínica, una por cita atendida.
+-- Nota clínica, una por cita atendida.
 CREATE TABLE nota_clinica (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   clinica_id     uuid NOT NULL REFERENCES clinica(id),
@@ -227,7 +227,7 @@ CREATE TABLE nota_clinica (
   FOREIGN KEY (clinica_id, profesional_id) REFERENCES profesional(clinica_id, id)
 );
 
--- RF18: bitácora append-only.
+-- Bitácora append-only.
 CREATE TABLE auditoria (
   id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   clinica_id  uuid NOT NULL REFERENCES clinica(id),

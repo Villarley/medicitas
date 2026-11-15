@@ -1,12 +1,12 @@
 -- MediCitas · reglas de negocio garantizadas por el motor (triggers)
 -- Códigos de error propios (SQLSTATE clase MC) que la API traduce a HTTP:
---   MC001 fuera del horario de atención (I3)          -> 422
---   MC002 cae dentro de un bloqueo de agenda (I3)      -> 422
---   MC003 transición de estado no permitida (RF13)     -> 409
---   MC004 desenlace antes de la hora de inicio (RF12)  -> 422
---   MC005 nota clínica no permitida (RF15)             -> 403
---   MC006 bitácora inmutable (I6)                      -> 403
---   MC007 campo inmutable de la cita (I4)              -> 422
+--   MC001 fuera del horario de atención                -> 422
+--   MC002 cae dentro de un bloqueo de agenda           -> 422
+--   MC003 transición de estado no permitida            -> 409
+--   MC004 desenlace antes de la hora de inicio         -> 422
+--   MC005 nota clínica no permitida                    -> 403
+--   MC006 bitácora inmutable                           -> 403
+--   MC007 campo inmutable de la cita                   -> 422
 --   MC008 profesional no habilitado para el servicio   -> 422
 --   MC009 profesional o servicio inactivo              -> 422
 --   MC010 el profesional solo registra desenlace       -> 403
@@ -14,7 +14,7 @@
 SET ROLE medicitas_owner;
 
 -- ---------------------------------------------------------------
--- Alta de cita: calcula fin (I4), valida habilitación y horario/bloqueos (I3).
+-- Alta de cita: calcula fin, valida habilitación y horario/bloqueos.
 -- El candado compartido por profesional deja correr reservas en paralelo
 -- pero espera a cualquier cambio de horario o bloqueo de ese profesional.
 -- ---------------------------------------------------------------
@@ -50,10 +50,10 @@ BEGIN
     RAISE EXCEPTION 'El profesional no atiende ese servicio' USING ERRCODE = 'MC008';
   END IF;
 
-  -- I4: la duración la manda el servicio, se ignora lo que venga en NEW.fin.
+  -- La duración la manda el servicio, se ignora lo que venga en NEW.fin.
   NEW.fin := NEW.inicio + make_interval(mins => v_duracion);
 
-  -- I3: dentro de un bloque del horario, en hora local de la clínica.
+  -- Tiene que caer dentro de un bloque del horario, en hora local de la clínica.
   SELECT c.zona_horaria INTO v_tz FROM clinica c WHERE c.id = NEW.clinica_id;
   v_ini := NEW.inicio AT TIME ZONE v_tz;
   v_fin := NEW.fin AT TIME ZONE v_tz;
@@ -81,7 +81,7 @@ CREATE TRIGGER cita_insertar BEFORE INSERT ON cita
   FOR EACH ROW EXECUTE FUNCTION cita_antes_de_insertar();
 
 -- ---------------------------------------------------------------
--- Cambio de cita: máquina de estados (RF13), desenlace (RF12) e I4.
+-- Cambio de cita: máquina de estados, desenlace y campos inmutables.
 -- reservada -> atendida | ausente | cancelada | reprogramada. Los finales no salen.
 -- ---------------------------------------------------------------
 CREATE FUNCTION cita_antes_de_actualizar() RETURNS trigger
@@ -130,7 +130,7 @@ CREATE TRIGGER cita_borrar BEFORE DELETE ON cita
 
 -- ---------------------------------------------------------------
 -- Cambios de horario y bloqueos: candado exclusivo por profesional,
--- así no se cruzan con una reserva que está validando I3.
+-- así no se cruzan con una reserva que está validando horario y bloqueos.
 -- ---------------------------------------------------------------
 CREATE FUNCTION agenda_candado_exclusivo() RETURNS trigger
 LANGUAGE plpgsql AS $$
@@ -151,7 +151,7 @@ CREATE TRIGGER bloqueo_candado BEFORE INSERT OR UPDATE OR DELETE ON bloqueo_agen
   FOR EACH ROW EXECUTE FUNCTION agenda_candado_exclusivo();
 
 -- ---------------------------------------------------------------
--- Nota clínica (RF15): solo sobre cita atendida y solo el profesional que la atendió.
+-- Nota clínica: solo sobre cita atendida y solo el profesional que la atendió.
 -- ---------------------------------------------------------------
 CREATE FUNCTION nota_antes_de_insertar() RETURNS trigger
 LANGUAGE plpgsql AS $$
@@ -180,7 +180,7 @@ CREATE TRIGGER nota_insertar BEFORE INSERT ON nota_clinica
   FOR EACH ROW EXECUTE FUNCTION nota_antes_de_insertar();
 
 -- ---------------------------------------------------------------
--- Bitácora (I6): quién y cuándo los pone el motor; no se edita ni se borra.
+-- Bitácora: quién y cuándo los pone el motor; no se edita ni se borra.
 -- ---------------------------------------------------------------
 CREATE FUNCTION auditoria_antes_de_insertar() RETURNS trigger
 LANGUAGE plpgsql AS $$
